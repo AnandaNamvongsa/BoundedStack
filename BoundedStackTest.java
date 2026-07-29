@@ -96,7 +96,7 @@ public class BoundedStackTest {
         assertThrows("pop() on an already-empty stack must throw again", IllegalStateException.class, s::pop);
     }
 
-    // ---------- ตัวช่วย assert เล็กๆ ทำเองกับมือ (ตาม C4) ----------
+    // ---------- ตัวช่วย assert  ----------
 
     private interface ThrowingAction {
         void run();
