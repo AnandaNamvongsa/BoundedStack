@@ -16,7 +16,6 @@ public class BoundedStack {
     //Safety from rep exposure:
     //   - province เป็น private final
     //   - constructor คัดลอก List ที่รับเข้ามา
-    //   - songs() คืนสำเนาของ songs ไม่คืน reference ตรงๆ
 
     /**
      * 
