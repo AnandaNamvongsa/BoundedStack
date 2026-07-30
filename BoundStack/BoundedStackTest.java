@@ -25,6 +25,20 @@ public class BoundedStackTest {
         testPushTwiceThenPopReturnsInLIFOOrder();
         testPopAfterEmptyingThrowsAgain();
 
+        // --- Capacity boundary ---
+        testPushUntilCapacityMakesFull();
+        testPushBeyondCapacityThrows();
+        testPeekAfterFillingReturnsLastPushed();
+        testPopFromFullStackMakesItNotFull();
+
+        // --- ตอนนี้โค้ดยังไม่กัน null / empty string เลยเทสแบบ current behavior ไปก่อน ---
+        testPushNullCurrentlySucceeds();
+        testPushEmptyStringCurrentlySucceeds();
+
+        // --- push/pop สลับกันไปมา ---
+        testInterleavedPushPopMaintainsLIFO();
+        testEmptyThenPushAgainWorks();
+
         System.out.println();
         System.out.println("===== SUMMARY =====");
         System.out.println("PASS: " + passCount + "  FAIL: " + failCount + "  TOTAL: " + (passCount + failCount));
@@ -96,7 +110,82 @@ public class BoundedStackTest {
         assertThrows("pop() on an already-empty stack must throw again", IllegalStateException.class, s::pop);
     }
 
-    // ---------- ตัวช่วย assert  ----------
+    // ---------- Batch 2: เทสขอบเขต capacity ----------
+
+    private static void testPushUntilCapacityMakesFull() {
+        BoundedStack s = new BoundedStack();
+        for (int i = 0; i < 100; i++) {
+            s.push("p" + i);
+        }
+        assertTrue("after pushing 100 elements (capacity), isFull() must be true", s.isFull());
+    }
+
+    private static void testPushBeyondCapacityThrows() {
+        BoundedStack s = new BoundedStack();
+        for (int i = 0; i < 100; i++) {
+            s.push("p" + i);
+        }
+        assertThrows("pushing the 101st element must throw IllegalStateException", IllegalStateException.class,
+                () -> s.push("overflow"));
+    }
+
+    private static void testPeekAfterFillingReturnsLastPushed() {
+        BoundedStack s = new BoundedStack();
+        for (int i = 0; i < 100; i++) {
+            s.push("p" + i);
+        }
+        assertEquals("once full, peek() must return the last pushed element (p99)", "p99", s.peek());
+    }
+
+    private static void testPopFromFullStackMakesItNotFull() {
+        BoundedStack s = new BoundedStack();
+        for (int i = 0; i < 100; i++) {
+            s.push("p" + i);
+        }
+        s.pop();
+        assertFalse("after popping once from a full stack, isFull() must be false", s.isFull());
+    }
+
+    // ---------- Batch 2: เทส behavior ปัจจุบันของ null / empty (ยังไม่มีการ์ด) ----------
+
+    private static void testPushNullCurrentlySucceeds() {
+        // น RI เขียนไว้ว่าห้ามมี null แต่ตอนนี้ยังไม่ได้เช็ค
+        // อันนี้แค่จดไว้เฉยๆ ไม่ได้บอกว่าถูกหรือผิด
+        BoundedStack s = new BoundedStack();
+        s.push(null);
+        assertEquals("push(null) currently does not throw; peek() returns null", null, s.peek());
+    }
+
+    private static void testPushEmptyStringCurrentlySucceeds() {
+        BoundedStack s = new BoundedStack();
+        s.push("");
+        assertEquals("push(\"\") currently does not throw; peek() returns empty string", "", s.peek());
+    }
+
+    // ---------- Batch 2: push/pop สลับกันไปมา ----------
+
+    private static void testInterleavedPushPopMaintainsLIFO() {
+        BoundedStack s = new BoundedStack();
+        s.push("A");
+        s.push("B");
+        assertEquals("push A,B then first pop must return B", "B", s.pop());
+        s.push("C");
+        assertEquals("push C after popping B: peek() must return C", "C", s.peek());
+        assertEquals("pop must return C", "C", s.pop());
+        assertEquals("pop must return A (the last one left at the bottom)", "A", s.pop());
+    }
+
+    private static void testEmptyThenPushAgainWorks() {
+        BoundedStack s = new BoundedStack();
+        s.push("A");
+        s.pop();
+        assertThrows("stack is empty: peek() must throw", IllegalStateException.class, s::peek);
+        s.push("B");
+        assertEquals("pushing again after being emptied must work normally", "B", s.peek());
+        assertFalse("after pushing 1 element, isFull() must still be false", s.isFull());
+    }
+
+    // ---------- ตัวช่วย assert เล็กๆ ทำเองกับมือ (ตาม C4) ----------
 
     private interface ThrowingAction {
         void run();
