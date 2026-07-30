@@ -40,7 +40,7 @@ public class BoundedStackTest {
         testEmptyThenPushAgainWorks();
 
         System.out.println();
-        System.out.println("===== SUMMARY =====");
+        System.out.println("SUMMARY");
         System.out.println("PASS: " + passCount + "  FAIL: " + failCount + "  TOTAL: " + (passCount + failCount));
         if (failCount > 0) {
             System.out.println("RESULT: FAIL");
@@ -110,7 +110,7 @@ public class BoundedStackTest {
         assertThrows("pop() on an already-empty stack must throw again", IllegalStateException.class, s::pop);
     }
 
-    // ---------- Batch 2: เทสขอบเขต capacity ----------
+    // ---------- Batch 2: เทส capacity ----------
 
     private static void testPushUntilCapacityMakesFull() {
         BoundedStack s = new BoundedStack();
@@ -146,7 +146,7 @@ public class BoundedStackTest {
         assertFalse("after popping once from a full stack, isFull() must be false", s.isFull());
     }
 
-    // ---------- Batch 2: เทส behavior ปัจจุบันของ null / empty (ยังไม่มีการ์ด) ----------
+    // ---------- Batch 2: เทส behavior ปัจจุบันของ null / empty  ----------
 
     private static void testPushNullCurrentlySucceeds() {
         // น RI เขียนไว้ว่าห้ามมี null แต่ตอนนี้ยังไม่ได้เช็ค
@@ -185,7 +185,7 @@ public class BoundedStackTest {
         assertFalse("after pushing 1 element, isFull() must still be false", s.isFull());
     }
 
-    // ---------- ตัวช่วย assert เล็กๆ ทำเองกับมือ (ตาม C4) ----------
+    // ---------- ตัวช่วย assert ----------
 
     private interface ThrowingAction {
         void run();
