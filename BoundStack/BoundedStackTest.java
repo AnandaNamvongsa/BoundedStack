@@ -1,19 +1,23 @@
-
+/**
+ * เทส BoundedStack แบบเขียนเช็คเอง ไม่ง้อ JUnit
+ * รันแล้วดูช่อง PASS/FAIL ของแต่ละบรรทัด แล้วดูสรุปท้ายสุดว่าผ่านหมดรึเปล่า
+ */
 public class BoundedStackTest {
 
     private static int passCount = 0;
     private static int failCount = 0;
 
     public static void main(String[] args) {
-        
-        // --- Creator ---
+
+        // สร้าง stack แบบต่างๆ
         testCustomCapacity();
         testNewStackPeekThrows();
         testNewStackPopThrows();
         testNewStackIsNotFull();
         testInvalidCapacityThrows();
         testNewStackIsEmpty();
-        // --- Producer (push) + Observer (peek) ---
+
+        // push แล้วดูด้วย peek
         testPushThenPeekReturnsSameElement();
         testPushTwiceThenPeekReturnsLastPushed();
         testPushMultipleThenPeekIsLIFO();
@@ -21,23 +25,23 @@ public class BoundedStackTest {
         testSizeAfterPushAndPop();
         testPeekDoesNotRemoveElement();
 
-        // --- Mutator (pop) ---
+        // pop
         testPushThenPopReturnsElementAndEmptiesStack();
         testPushTwiceThenPopReturnsInLIFOOrder();
         testPopAfterEmptyingThrowsAgain();
         testPopMakesStackEmpty();
 
-        // --- Capacity boundary ---
+        // เต็มพอดี / ล้น
         testPushUntilCapacityMakesFull();
         testPushBeyondCapacityThrows();
         testPeekAfterFillingReturnsLastPushed();
         testPopFromFullStackMakesItNotFull();
 
-        // --- Invalid input ---
+        // ค่าแปลกๆ
         testPushNullThrows();
         testPushEmptyStringSucceeds();
 
-        // --- push/pop สลับกันไปมา ---
+        // ใช้งานจริงแบบสลับไปมา
         testInterleavedPushPopMaintainsLIFO();
         testEmptyThenPushAgainWorks();
 
@@ -51,63 +55,52 @@ public class BoundedStackTest {
         }
     }
 
-    // ---------- เคสเทสต่างๆ ----------
-    private static void testPopMakesStackEmpty() {
-    BoundedStack s = new BoundedStack(100);
+    // ---------- สร้าง stack แบบต่างๆ ----------
 
-    s.push("A");
-    s.pop();
-
-    assertTrue(
-        "after pop last element, stack should be empty",
-        s.isEmpty()
-    );
-    }
-    
-    private static void testInvalidCapacityThrows() {
-    assertThrows(
-        "capacity <= 0 must throw IllegalArgumentException",
-        IllegalArgumentException.class,
-        () -> new BoundedStack(0)
-    );
-
-    assertThrows(
-        "negative capacity must throw IllegalArgumentException",
-        IllegalArgumentException.class,
-        () -> new BoundedStack(-1)
-    );
-    }   
+    // capacity กำหนดเองได้ ลองตั้ง 3 ดู push จนเต็มแล้วเช็คว่ามันรู้ตัวว่าเต็ม
+    // แล้วลอง push ตัวที่ 4 ดูว่าโดนบล็อกจริงไหม
     private static void testCustomCapacity() {
-    BoundedStack s = new BoundedStack(3);
-
-    s.push("A");
-    s.push("B");
-    s.push("C");
-
-    assertTrue(
-        "stack with capacity 3 should be full",
-        s.isFull()
-    );
-    assertThrows(
-        "pushing over custom capacity should throw",
-        IllegalStateException.class,
-        () -> s.push("D")
-    );
+        BoundedStack s = new BoundedStack(3);
+        s.push("A");
+        s.push("B");
+        s.push("C");
+        assertTrue("stack with capacity 3 should be full", s.isFull());
+        assertThrows("pushing over custom capacity should throw", IllegalStateException.class,
+                () -> s.push("D"));
     }
+
+    // stack ใหม่ ยังไม่ทันใส่อะไรเลย peek() ต้องบ่นว่าว่าง
     private static void testNewStackPeekThrows() {
         BoundedStack s = new BoundedStack(100);
         assertThrows("new stack: peek() must throw IllegalStateException", IllegalStateException.class, s::peek);
     }
 
+    // เหมือนกัน แต่เปลี่ยนเป็น pop() แทน
     private static void testNewStackPopThrows() {
         BoundedStack s = new BoundedStack(100);
         assertThrows("new stack: pop() must throw IllegalStateException", IllegalStateException.class, s::pop);
     }
 
+    // stack เพิ่งสร้าง ไม่มีทางเต็มอยู่แล้ว
     private static void testNewStackIsNotFull() {
         BoundedStack s = new BoundedStack(100);
         assertFalse("new stack: isFull() must be false", s.isFull());
     }
+
+    // ใส่ cap มั่วๆ 0 กับติดลบ ต้องโดนเตะกลับด้วย IllegalArgumentException
+    private static void testInvalidCapacityThrows() {
+        assertThrows("capacity <= 0 must throw IllegalArgumentException", IllegalArgumentException.class,
+                () -> new BoundedStack(0));
+        assertThrows("negative capacity must throw IllegalArgumentException", IllegalArgumentException.class,
+                () -> new BoundedStack(-1));
+    }
+
+    private static void testNewStackIsEmpty() {
+        BoundedStack s = new BoundedStack(100);
+        assertTrue("new stack should be empty", s.isEmpty());
+    }
+
+    // ---------- push แล้วดูด้วย peek ----------
 
     private static void testPushThenPeekReturnsSameElement() {
         BoundedStack s = new BoundedStack(100);
@@ -115,6 +108,7 @@ public class BoundedStackTest {
         assertEquals("push 1 element: peek() must return that same element", "Bangkok", s.peek());
     }
 
+    // push ไป 2 ตัว ของที่โผล่มาตอน peek ต้องเป็นตัวที่ใส่ล่าสุด ไม่ใช่ตัวแรก
     private static void testPushTwiceThenPeekReturnsLastPushed() {
         BoundedStack s = new BoundedStack(100);
         s.push("Bangkok");
@@ -130,6 +124,32 @@ public class BoundedStackTest {
         assertEquals("peek() must return the top element (C)", "C", s.peek());
     }
 
+    private static void testPushMakesStackNotEmpty() {
+        BoundedStack s = new BoundedStack(100);
+        s.push("A");
+        assertFalse("stack should not be empty after push", s.isEmpty());
+    }
+
+    // ไล่ดู size ตั้งแต่ว่าง -> push -> pop กลับมาว่าง ตัวเลขต้องขยับถูกจังหวะ
+    private static void testSizeAfterPushAndPop() {
+        BoundedStack s = new BoundedStack(100);
+        assertEquals("new stack size", 0, s.size());
+        s.push("A");
+        assertEquals("size after push", 1, s.size());
+        s.pop();
+        assertEquals("size after pop", 0, s.size());
+    }
+
+    // peek แค่แอบดู ไม่ได้หยิบออก เรียกกี่รอบก็ควรเห็นของเดิม
+    private static void testPeekDoesNotRemoveElement() {
+        BoundedStack s = new BoundedStack(100);
+        s.push("A");
+        s.peek();
+        assertEquals("peek should not remove element", 1, s.size());
+    }
+
+    // ---------- pop ----------
+
     private static void testPushThenPopReturnsElementAndEmptiesStack() {
         BoundedStack s = new BoundedStack(100);
         s.push("Bangkok");
@@ -138,6 +158,7 @@ public class BoundedStackTest {
         assertThrows("after popping to empty, peek() must throw", IllegalStateException.class, s::peek);
     }
 
+    // เข้า A ก่อน B ทีหลัง ตอนออกต้องสลับ - B ออกก่อน A
     private static void testPushTwiceThenPopReturnsInLIFOOrder() {
         BoundedStack s = new BoundedStack(100);
         s.push("A");
@@ -146,6 +167,7 @@ public class BoundedStackTest {
         assertEquals("second pop() must return A", "A", s.pop());
     }
 
+    // pop จนหมดแล้ว ดันจะ pop อีก ก็ต้องโดนแบบเดิม ไม่ใช่จู่ๆ ทำงานได้เฉยๆ
     private static void testPopAfterEmptyingThrowsAgain() {
         BoundedStack s = new BoundedStack(100);
         s.push("A");
@@ -153,7 +175,14 @@ public class BoundedStackTest {
         assertThrows("pop() on an already-empty stack must throw again", IllegalStateException.class, s::pop);
     }
 
-    // ---------- Capacity boundary ----------
+    private static void testPopMakesStackEmpty() {
+        BoundedStack s = new BoundedStack(100);
+        s.push("A");
+        s.pop();
+        assertTrue("after pop last element, stack should be empty", s.isEmpty());
+    }
+
+    // ---------- เต็มพอดี หรือ ล้น ----------
 
     private static void testPushUntilCapacityMakesFull() {
         BoundedStack s = new BoundedStack(100);
@@ -163,6 +192,7 @@ public class BoundedStackTest {
         assertTrue("after pushing 100 elements (capacity), isFull() must be true", s.isFull());
     }
 
+    // ยัดจนเต็มแล้วยังจะยัดต่ออีกตัว อันนี้แหละที่ต้องกันไว้ไม่ให้ล้น
     private static void testPushBeyondCapacityThrows() {
         BoundedStack s = new BoundedStack(100);
         for (int i = 0; i < 100; i++) {
@@ -180,6 +210,7 @@ public class BoundedStackTest {
         assertEquals("once full, peek() must return the last pushed element (p99)", "p99", s.peek());
     }
 
+    // เต็มอยู่ พอ pop ออกไปตัวนึง ก็ควรมีที่ว่างกลับมาให้ push ต่อได้
     private static void testPopFromFullStackMakesItNotFull() {
         BoundedStack s = new BoundedStack(100);
         for (int i = 0; i < 100; i++) {
@@ -189,25 +220,25 @@ public class BoundedStackTest {
         assertFalse("after popping once from a full stack, isFull() must be false", s.isFull());
     }
 
-    // ---------- Invalid input ----------
+    // ---------- ค่าแปลก ----------
 
     private static void testPushNullThrows() {
         BoundedStack s = new BoundedStack(100);
-
-        assertThrows(
-                "push(null) must throw IllegalArgumentException",
-                IllegalArgumentException.class,
+        assertThrows("push(null) must throw IllegalArgumentException", IllegalArgumentException.class,
                 () -> s.push(null));
     }
 
+    // string ว่าง "" ไม่เหมือน null นะ อันนี้ผ่านได้ตาม spec ที่ห้ามแค่ null
     private static void testPushEmptyStringSucceeds() {
         BoundedStack s = new BoundedStack(100);
         s.push("");
         assertEquals("push(\"\") should allow empty string", "", s.peek());
     }
 
-    // ---------- Batch 2: push/pop สลับกันไปมา ----------
+    // ---------- ใช้งานจริงแบบสลับไปมา ----------
 
+    // จำลองการใช้งานจริงหน่อย ไม่ push รวดเดียวแล้ว pop รวดเดียว
+    // แต่สลับกันไปมา ดูว่าลำดับยังถูกอยู่ตลอด
     private static void testInterleavedPushPopMaintainsLIFO() {
         BoundedStack s = new BoundedStack(100);
         s.push("A");
@@ -219,6 +250,7 @@ public class BoundedStackTest {
         assertEquals("pop must return A (the last one left at the bottom)", "A", s.pop());
     }
 
+    // เคยว่างมาแล้วรอบนึง แล้วกลับมาใช้ใหม่ ต้องทำงานเหมือน stack ปกติ ไม่มีอะไรค้าง
     private static void testEmptyThenPushAgainWorks() {
         BoundedStack s = new BoundedStack(100);
         s.push("A");
@@ -229,41 +261,7 @@ public class BoundedStackTest {
         assertFalse("after pushing 1 element, isFull() must still be false", s.isFull());
     }
 
-    private static void testNewStackIsEmpty() {
-        BoundedStack s = new BoundedStack(100);
-        assertTrue(
-                "new stack should be empty",
-                s.isEmpty());
-    }
-
-    private static void testPushMakesStackNotEmpty() {
-        BoundedStack s = new BoundedStack(100);
-        s.push("A");
-        assertFalse(
-                "stack should not be empty after push",
-                s.isEmpty());
-    }
-
-    private static void testSizeAfterPushAndPop() {
-        BoundedStack s = new BoundedStack(100);
-        assertEquals("new stack size", 0, s.size());
-        s.push("A");
-        assertEquals("size after push", 1, s.size());
-        s.pop();
-        assertEquals("size after pop", 0, s.size());
-    }
-
-    private static void testPeekDoesNotRemoveElement() {
-        BoundedStack s = new BoundedStack(100);
-        s.push("A");
-        s.peek();
-        assertEquals(
-                "peek should not remove element",
-                1,
-                s.size());
-    }
-
-    // ---------- ตัวช่วย assert ----------
+    // ---------- ช่วยเช็คผล---------
 
     private interface ThrowingAction {
         void run();
@@ -282,6 +280,8 @@ public class BoundedStackTest {
         report(testName, !condition, "expected false, got true");
     }
 
+    // ลองรัน action แล้วดักดูว่ามัน throw ตามที่คาดไว้จริงไหม
+    // ไม่ throw เลย หรือ throw ผิดตัว ก็ถือว่าไม่ผ่าน
     private static void assertThrows(String testName, Class<? extends Throwable> expectedType, ThrowingAction action) {
         try {
             action.run();

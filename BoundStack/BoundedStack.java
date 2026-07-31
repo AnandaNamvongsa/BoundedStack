@@ -122,5 +122,19 @@ public class BoundedStack {
         return province.get(province.size()-1);
     }
 
+    /**
+     * สร้าง BoundedStack ตัวใหม่ที่เป็นสำเนาอิสระของ Stack นี้
+     * การแก้ไข Stack ที่คืนกลับมาจะไม่กระทบ Stack ตัวนี้ และในทางกลับกัน
+     *
+     * @return BoundedStack ตัวใหม่ที่มี capacity และสมาชิกเหมือนกับตัวนี้ทุกประการ
+     */
+    public BoundedStack copy(){
+        BoundedStack result = new BoundedStack(this.capacity);
+        result.province.addAll(this.province);
+        result.checkRep();
+        this.checkRep();
+        return result;
+    }
+
     
 }
